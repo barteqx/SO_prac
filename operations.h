@@ -11,8 +11,7 @@
 #include "b64.h"
 
 // Shared memory keys
-#define _SHM_KEY_STR 31415911
-#define _SHM_KEY_STATE 31416111
+key_t _SHM_KEY_STR, _SHM_KEY_STATE;
 
 typedef struct st {
   int running;

@@ -12,6 +12,9 @@ int main(int argc, char const *argv[])
 
   int ID, counter = 0;
 
+  _SHM_KEY_STR = ftok(argv[0], 'B');
+  _SHM_KEY_STATE = ftok(argv[0], 'C');
+
   do {
 
     ID = fork();
@@ -30,6 +33,7 @@ int main(int argc, char const *argv[])
     } else {
       
       _init_SHMEM(str, s, counter);
+      printf("%d\n", (*s).state);
       random_str(current);
       int i;
       do {
@@ -39,7 +43,7 @@ int main(int argc, char const *argv[])
     counter++;
     }    
 
-  } while (s -> running != tasks);
+  } while ((*s).running != tasks);
 
 
   if (ID != 0) { 

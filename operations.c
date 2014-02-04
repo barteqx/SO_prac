@@ -5,22 +5,23 @@ void _init_SHMEM (char * string, state * s, int init) {
   int string_id, state_id;
 
   if (init == 0) {
-    state_id = shmget(IPC_PRIVATE, sizeof(state), IPC_CREAT | 0666);
+    state_id = shmget(_SHM_KEY_STATE, sizeof(state), IPC_CREAT | 0666);
   }
   else
-    state_id = shmget(IPC_PRIVATE, sizeof(state), 0666);
-  s = shmat(state_id, NULL, 0);
+    state_id = shmget(_SHM_KEY_STATE, sizeof(state), 0666);
+  s = (state*)shmat(state_id, NULL, 0);
 
   if (init == 0) { 
-    printf("test\n");
     (*s).state = 0;
+    printf("%d\n", (*s).state);
     (*s).running = 0;
   }
+  
 
   if (init == 0)
-    string_id = shmget(IPC_PRIVATE, sizeof(int)*(_STR_LENGTH), IPC_CREAT | 0666);
+    string_id = shmget(_SHM_KEY_STR, sizeof(int)*(_STR_LENGTH), IPC_CREAT | 0666);
   else
-    string_id = shmget(IPC_PRIVATE, sizeof(int), 0666);
+    string_id = shmget(_SHM_KEY_STR, sizeof(int), 0666);
   string = (char*)shmat(string_id, NULL, 0);
 
 }
