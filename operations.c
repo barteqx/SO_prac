@@ -1,35 +1,29 @@
 #include "operations.h"
 
-void _init_SHMEM (char * string, state * s, int init) {
+void _init_SHMEM (sem_t * sem, char * string, state * s, int init, int proc) {
 
-  int string_id, state_id;
+  int descr_state, descr_string;
 
-  if (init == 0) {
-    state_id = shmget(_SHM_KEY_STATE, sizeof(state), IPC_CREAT | 0666);
-  }
-  else
-    state_id = shmget(_SHM_KEY_STATE, sizeof(state), 0666);
-  s = (state*)shmat(state_id, NULL, 0);
+  descr_state = shm_open("/state_mem", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+  ftruncate(descr_state, sizeof(state));
+  s = mmap(NULL, sizeof(state), PROT_READ | PROT_WRITE, MAP_SHARED, descr_state, 0);
+
+  descr_string = shm_open("/string_mem", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+  ftruncate(descr_string, sizeof(char)*_STR_LENGTH);
+  string = mmap(NULL, sizeof(char)*_STR_LENGTH, PROT_READ | PROT_WRITE, MAP_SHARED, descr_string, 0);
 
   if (init == 0) { 
-    (*s).state = 0;
-    printf("%d\n", (*s).state);
-    (*s).running = 0;
-  }
-  
-
-  if (init == 0)
-    string_id = shmget(_SHM_KEY_STR, sizeof(int)*(_STR_LENGTH), IPC_CREAT | 0666);
-  else
-    string_id = shmget(_SHM_KEY_STR, sizeof(int), 0666);
-  string = (char*)shmat(string_id, NULL, 0);
+    s -> state = 0;
+    s -> running = 0;
+    sem_init(sem, 0, proc);
+  } else sem = &(s -> sem);
 
 }
 
 void _dt_SHMEM (char * string, state * s) {
 
-  shmdt(s);
-  shmdt(string);
+  munmap(s, sizeof(state));
+  munmap(string, sizeof(char)*_STR_LENGTH);
 
 }
 
@@ -52,9 +46,9 @@ char random_char() {
 int submit_str(sem_t * sem, char * str, char * shm_str, state * s) {
   sem_wait(sem);
 
-  if ((*s).state == 0) {
+  if (s -> state == 0) {
     for (int i = 0; i < _STR_LENGTH; i++) shm_str[i] = str[i];
-    (*s).state = 1;
+    s -> state = 1;
     sem_post(sem);
     return 0;
   } 
@@ -66,10 +60,10 @@ int submit_str(sem_t * sem, char * str, char * shm_str, state * s) {
 int read_str(sem_t * sem, char * str, char * shm_str, state * s) {
   sem_wait(sem);
 
-  if ((*s).state == 1) {
+  if (s -> state == 1) {
     for (int i = 0; i < _STR_LENGTH; i++) str[i] = shm_str[i];
-    (*s).state = 0;
-    (*s).running++;
+    s -> state = 0;
+    s -> running++;
     sem_post(sem);
     return 0;
   } 
@@ -81,7 +75,7 @@ int read_str(sem_t * sem, char * str, char * shm_str, state * s) {
 void finish(sem_t * sem, state * s) {
   sem_wait(sem);
 
-  (*s).state = 2;
+  s -> state = 2;
 
   sem_post(sem);
 }

@@ -1,5 +1,6 @@
-#include <sys/ipc.h>
-#include <sys/shm.h>
+#include <sys/mman.h>
+#include <sys/stat.h> 
+#include <fcntl.h> 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -10,12 +11,10 @@
 
 #include "b64.h"
 
-// Shared memory keys
-key_t _SHM_KEY_STR, _SHM_KEY_STATE;
-
 typedef struct st {
   int running;
   int state;
+  sem_t sem;
 } state;
 
 // Length of processed strings
@@ -25,7 +24,7 @@ typedef struct st {
 #define _N_PROC 32
 
 // Initialize shared memory pointers
-void _init_SHMEM (char * string, state * s, int init);
+void _init_SHMEM (sem_t * sem, char * string, state * s, int init, int proc);
 
 // Detach shared memory pointers
 void _dt_SHMEM (char * string, state * s);
