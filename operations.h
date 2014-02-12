@@ -14,7 +14,6 @@
 typedef struct st {
   int running;
   int state;
-  sem_t sem;
 } state;
 
 // Length of processed strings
@@ -27,7 +26,7 @@ typedef struct st {
 void _init_SHMEM (sem_t * sem, char * string, state * s, int init, int proc);
 
 // Detach shared memory pointers
-void _dt_SHMEM (char * string, state * s);
+void _dt_SHMEM (sem_t * sem, char * string, state * s);
 
 // Generate random string
 void random_str(char * str);

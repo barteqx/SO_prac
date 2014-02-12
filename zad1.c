@@ -8,47 +8,51 @@ int main(int argc, char const *argv[])
 
   sem_t sem;
 
-  sem_init(&sem, 0, conc_processes);
+  sem_init(&sem, 1, conc_processes);
 
-  int ID, counter = 0;
+  int ID, counter = 0, sent;
 
   do {
 
     ID = fork();
-    printf("Forking... %d\n", ID);
-
+    
     if (ID == 0) {
+      printf("Forking... %d\n", getpid());
       _init_SHMEM(&sem, str, s, -1, -1);
       int i = read_str(&sem, current, str, s);
       if (i == 0) {
         char * encoded = (char*)malloc(sizeof(char)*Base64encode_len(_STR_LENGTH));
         Base64encode(encoded, current, _STR_LENGTH);
         printf("%d: %s => %s\n", getpid(), current, encoded);
+        free(encoded);
       }
-
       break;
     } else {
-      
-      _init_SHMEM(&sem, str, s, counter, conc_processes);
-      printf("state: %d\n", (*s).state);
-      printf("running: %d\n", (*s).running);
+      if (counter == 0) {
+        _init_SHMEM(&sem, str, s, counter, conc_processes);
+        printf("%d\n", s -> state);
+      }
       random_str(current);
       int i;
       do {
+
         i = submit_str(&sem, current, str, s);
       } while (i != 0);
 
-    counter = 1;
+      printf("%s - submit\n", current);
+
+      counter++;
     }    
 
   } while (s -> running != tasks);
 
 
   if (ID != 0) { 
-    sem_destroy(&sem);
+    
     finish(&sem, s);
+    sem_destroy(&sem);
   }
-  _dt_SHMEM(str, s);
+  _dt_SHMEM(&sem, str, s);
 
   return 0;
 }
