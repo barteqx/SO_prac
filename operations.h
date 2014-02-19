@@ -17,13 +17,13 @@ typedef struct st {
 } state;
 
 // Length of processed strings
-#define _STR_LENGTH 32
+#define _STR_LENGTH 1024
 
 // Number of processes run
 #define _N_PROC 32
 
 // Initialize shared memory pointers
-void _init_SHMEM (sem_t * sem, char * string, state * s, int init, int proc);
+void _init_SHMEM (sem_t * sem, char ** string, state ** s, int init, int proc);
 
 // Detach shared memory pointers
 void _dt_SHMEM (sem_t * sem, char * string, state * s);

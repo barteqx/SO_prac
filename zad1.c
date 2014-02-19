@@ -18,19 +18,17 @@ int main(int argc, char const *argv[])
     
     if (ID == 0) {
       printf("Forking... %d\n", getpid());
-      _init_SHMEM(&sem, str, s, -1, -1);
+      _init_SHMEM(&sem, &str, &s, -1, -1);
       int i = read_str(&sem, current, str, s);
       if (i == 0) {
         char * encoded = (char*)malloc(sizeof(char)*Base64encode_len(_STR_LENGTH));
         Base64encode(encoded, current, _STR_LENGTH);
         printf("%d: %s => %s\n", getpid(), current, encoded);
-        free(encoded);
       }
       break;
     } else {
       if (counter == 0) {
-        _init_SHMEM(&sem, str, s, counter, conc_processes);
-        printf("%d\n", s -> state);
+        _init_SHMEM(&sem, &str, &s, counter, conc_processes);
       }
       random_str(current);
       int i;
